@@ -1,7 +1,11 @@
-import prisma from '../src/lib/db';
+import prisma from '@/lib/db';
 
 describe('Database Client', () => {
   beforeAll(async () => {
+    await prisma.channel.deleteMany();
+  });
+
+  afterEach(async () => {
     await prisma.channel.deleteMany();
   });
 
