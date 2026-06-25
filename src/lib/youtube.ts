@@ -1,6 +1,26 @@
-export async function getChannelBasicStats(channelId: string, apiKey: string) {
-  const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
-  const response = await fetch(url);
+export interface YouTubeChannelStats {
+  youtubeId: string;
+  title: string;
+  description: string;
+  subscriberCount: number;
+  viewCount: number;
+  videoCount: number;
+}
+
+export async function getChannelBasicStats(channelId: string, apiKey: string): Promise<YouTubeChannelStats> {
+  const params = new URLSearchParams({
+    part: 'statistics,snippet',
+    id: channelId,
+    key: apiKey
+  });
+  const url = `https://www.googleapis.com/youtube/v3/channels?${params.toString()}`;
+  
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (error) {
+    throw new Error(`YouTube API Network Error: ${error instanceof Error ? error.message : String(error)}`);
+  }
   
   if (!response.ok) {
     throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);

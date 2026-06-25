@@ -1,11 +1,15 @@
 /** @jest-environment node */
 import { getChannelBasicStats } from '../src/lib/youtube';
 
-global.fetch = jest.fn();
-
 describe('YouTube API Client', () => {
+  let fetchSpy: jest.SpyInstance;
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    fetchSpy = jest.spyOn(global, 'fetch');
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should fetch and parse channel stats successfully', async () => {
@@ -26,7 +30,7 @@ describe('YouTube API Client', () => {
       ]
     };
 
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    fetchSpy.mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });
@@ -35,12 +39,12 @@ describe('YouTube API Client', () => {
 
     expect(stats.title).toBe('Mock Channel');
     expect(stats.subscriberCount).toBe(500);
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('UC123'));
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('fake-api-key'));
+    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('UC123'));
+    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('fake-api-key'));
   });
 
   it('should throw an error if channel is not found', async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    fetchSpy.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ items: [] }),
     });
@@ -49,12 +53,18 @@ describe('YouTube API Client', () => {
   });
 
   it('should throw an error on bad response status', async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    fetchSpy.mockResolvedValueOnce({
       ok: false,
       status: 403,
       statusText: 'Forbidden',
     });
 
     await expect(getChannelBasicStats('UC123', 'fake-api-key')).rejects.toThrow('YouTube API Error: 403 Forbidden');
+  });
+
+  it('should throw a network error if fetch fails', async () => {
+    fetchSpy.mockRejectedValueOnce(new Error('Network failure'));
+
+    await expect(getChannelBasicStats('UC123', 'fake-api-key')).rejects.toThrow('YouTube API Network Error: Network failure');
   });
 });
