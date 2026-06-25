@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Channel {
+  id            String   @id @default(uuid())
+  youtubeId     String   @unique
+  title         String
+  description   String?
+  subscriberCount Int    @default(0)
+  viewCount     Int      @default(0)
+  videoCount    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
