@@ -1,1 +1,49 @@
+:root {
+  --bg-color: #0a0a0a;
+  --surface-color: #151515;
+  --surface-hover: #1f1f1f;
+  --border-color: #2a2a2a;
+  --border-hover: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --accent-color: #ff3366;
+  --accent-glow: rgba(255, 51, 102, 0.15);
+  
+  --badge-red-bg: rgba(255, 51, 102, 0.1);
+  --badge-red-border: rgba(255, 51, 102, 0.3);
+  --badge-red-text: #ff4d79;
+  
+  --badge-orange-bg: rgba(255, 153, 51, 0.1);
+  --badge-orange-border: rgba(255, 153, 51, 0.3);
+  --badge-orange-text: #ffb366;
 
+  --badge-green-bg: rgba(51, 204, 102, 0.1);
+  --badge-green-border: rgba(51, 204, 102, 0.3);
+  --badge-green-text: #66ff99;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
