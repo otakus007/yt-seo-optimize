@@ -50,7 +50,7 @@ async function main() {
       }
     });
 
-    console.log(`[3/4] Fetching up to 50 recent videos from uploads playlist ${uploadsPlaylistId}...`);
+    console.log(`[3/4] Fetching videos from uploads playlist ${uploadsPlaylistId}...`);
     const videoIds = await getVideosFromPlaylist(uploadsPlaylistId, apiKey);
     
     if (videoIds.length === 0) {
@@ -69,6 +69,10 @@ async function main() {
           title: video.title,
           description: video.description,
           viewCount: video.viewCount,
+          likeCount: video.likeCount,
+          commentCount: video.commentCount,
+          tags: video.tags,
+          thumbnailUrl: video.thumbnailUrl,
           duration: video.duration,
         },
         create: {
@@ -77,8 +81,12 @@ async function main() {
           description: video.description,
           publishedAt: video.publishedAt,
           viewCount: video.viewCount,
+          likeCount: video.likeCount,
+          commentCount: video.commentCount,
+          tags: video.tags,
+          thumbnailUrl: video.thumbnailUrl,
           duration: video.duration,
-          channelId: savedChannel.id
+          channelId: savedChannel.id,
         }
       });
       savedCount++;

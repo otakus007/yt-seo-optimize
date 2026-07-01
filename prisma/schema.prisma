@@ -27,6 +27,10 @@ model Video {
   description  String?
   publishedAt  DateTime
   viewCount    Int      @default(0)
+  likeCount    Int      @default(0)
+  commentCount Int      @default(0)
+  tags         String?
+  thumbnailUrl String?
   duration     String?
   channelId    String
   channel      Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)

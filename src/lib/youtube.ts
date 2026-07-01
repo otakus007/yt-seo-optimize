@@ -48,6 +48,10 @@ export interface YouTubeVideoStats {
   description: string;
   publishedAt: Date;
   viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  tags: string | null;
+  thumbnailUrl: string | null;
   duration: string;
 }
 
@@ -82,52 +86,73 @@ export async function getChannelByHandle(handle: string, apiKey: string): Promis
   };
 }
 
-export async function getVideosFromPlaylist(playlistId: string, apiKey: string): Promise<string[]> {
-  const params = new URLSearchParams({
-    part: 'contentDetails',
-    playlistId: playlistId,
-    maxResults: '50', // Fetch up to 50 videos at once
-    key: apiKey
-  });
-  
-  const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`);
-  
-  if (!response.ok) {
-    throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
+export async function getVideosFromPlaylist(playlistId: string, apiKey: string, maxVideos = 200): Promise<string[]> {
+  const videoIds: string[] = [];
+  let pageToken: string | undefined;
+
+  while (videoIds.length < maxVideos) {
+    const params = new URLSearchParams({
+      part: 'contentDetails',
+      playlistId,
+      maxResults: '50',
+      key: apiKey,
+      ...(pageToken ? { pageToken } : {}),
+    });
+
+    const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data.items || data.items.length === 0) break;
+
+    videoIds.push(...data.items.map((item: any) => item.contentDetails.videoId));
+    pageToken = data.nextPageToken;
+    if (!pageToken) break;
   }
 
-  const data = await response.json();
-  if (!data.items || data.items.length === 0) {
-    return [];
-  }
-
-  return data.items.map((item: any) => item.contentDetails.videoId);
+  return videoIds.slice(0, maxVideos);
 }
 
 export async function getVideoStats(videoIds: string[], apiKey: string): Promise<YouTubeVideoStats[]> {
   if (videoIds.length === 0) return [];
-  
-  const params = new URLSearchParams({
-    part: 'snippet,contentDetails,statistics',
-    id: videoIds.join(','),
-    key: apiKey
-  });
-  
-  const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params.toString()}`);
-  
-  if (!response.ok) {
-    throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
+
+  const results: YouTubeVideoStats[] = [];
+
+  // YouTube videos.list accepts at most 50 IDs per request.
+  for (let i = 0; i < videoIds.length; i += 50) {
+    const batch = videoIds.slice(i, i + 50);
+    const params = new URLSearchParams({
+      part: 'snippet,contentDetails,statistics',
+      id: batch.join(','),
+      key: apiKey
+    });
+
+    const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params.toString()}`);
+
+    if (!response.ok) {
+      throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data.items) continue;
+
+    for (const video of data.items) {
+      results.push({
+        youtubeId: video.id,
+        title: video.snippet.title,
+        description: video.snippet.description,
+        publishedAt: new Date(video.snippet.publishedAt),
+        viewCount: parseInt(video.statistics.viewCount || '0', 10),
+        likeCount: parseInt(video.statistics.likeCount || '0', 10),
+        commentCount: parseInt(video.statistics.commentCount || '0', 10),
+        tags: video.snippet.tags ? JSON.stringify(video.snippet.tags) : null,
+        thumbnailUrl: video.snippet.thumbnails?.default?.url ?? null,
+        duration: video.contentDetails.duration,
+      });
+    }
   }
 
-  const data = await response.json();
-  if (!data.items) return [];
-
-  return data.items.map((video: any) => ({
-    youtubeId: video.id,
-    title: video.snippet.title,
-    description: video.snippet.description,
-    publishedAt: new Date(video.snippet.publishedAt),
-    viewCount: parseInt(video.statistics.viewCount || '0', 10),
-    duration: video.contentDetails.duration
-  }));
+  return results;
 }

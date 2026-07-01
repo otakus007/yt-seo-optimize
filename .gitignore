@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# stale root-level db artifact (canonical db is prisma/dev.db)
+/dev.db
+
+.omc
+
+# working data JSON files (agent workspace output)
+/_workspace/
+
+# SWC build cache
+/.swc/
+
+# SQLite database files
+# NOTE: prisma/dev.db is intentionally tracked so it can be transferred between machines.
+/prisma/test.db
+
+# temporary mockups/scratch files
+/scratch/

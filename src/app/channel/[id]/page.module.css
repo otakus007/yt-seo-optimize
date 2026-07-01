@@ -85,3 +85,155 @@
   border: 1px solid var(--badge-green-border);
   color: var(--badge-green-text);
 }
+
+.statsBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.statTile {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.healthBar {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.healthCount {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.healthCountRed {
+  background: var(--badge-red-bg);
+  border: 1px solid var(--badge-red-border);
+  color: var(--badge-red-text);
+}
+
+.healthCountOrange {
+  background: var(--badge-orange-bg);
+  border: 1px solid var(--badge-orange-border);
+  color: var(--badge-orange-text);
+}
+
+.healthCountGreen {
+  background: var(--badge-green-bg);
+  border: 1px solid var(--badge-green-border);
+  color: var(--badge-green-text);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.analysisLink {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.quickWins {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.quickWinItem {
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 0;
+}
+
+.quickWinItem:last-child {
+  border-bottom: none;
+}
+
+.quickWinCategory {
+  display: inline-block;
+  background: var(--badge-orange-bg);
+  border: 1px solid var(--badge-orange-border);
+  color: var(--badge-orange-text);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.quickWinText {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.quickWinExample {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.badges {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.badgeSmall {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.sortBar {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.sortBtn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.sortBtnActive {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
