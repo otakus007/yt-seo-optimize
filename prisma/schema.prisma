@@ -8,32 +8,158 @@ datasource db {
 }
 
 model Channel {
-  id            String   @id @default(uuid())
-  youtubeId     String   @unique
-  title         String
-  description   String?
-  subscriberCount Int    @default(0)
-  viewCount     Int      @default(0)
-  videoCount    Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  videos        Video[]
+  id                String   @id @default(uuid())
+  youtubeId         String   @unique
+  handle            String?
+  title             String
+  description       String?
+  uploadsPlaylistId String?
+  isOwn             Boolean  @default(false)
+  monetized         Boolean  @default(false)
+  language          String   @default("en")
+  niche             String   @default("manhwa-recap")
+  refreshToken      String?  // AES-GCM encrypted, see src/lib/crypto.ts
+  subscriberCount   Int      @default(0)
+  viewCount         BigInt   @default(0)
+  videoCount        Int      @default(0)
+  lastSyncedAt      DateTime?
+  lastAnalyticsDate DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  videos            Video[]
+  reports           AnalyticsReport[]
+  recommendations   Recommendation[]
+  drafts            Draft[]
 }
 
 model Video {
-  id           String   @id @default(uuid())
-  youtubeId    String   @unique
-  title        String
-  description  String?
-  publishedAt  DateTime
-  viewCount    Int      @default(0)
-  likeCount    Int      @default(0)
-  commentCount Int      @default(0)
-  tags         String?
-  thumbnailUrl String?
-  duration     String?
-  channelId    String
-  channel      Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(uuid())
+  youtubeId       String   @unique
+  title           String
+  description     String?
+  tags            String?  // JSON string[]
+  publishedAt     DateTime
+  viewCount       Int      @default(0)
+  likeCount       Int      @default(0)
+  commentCount    Int      @default(0)
+  thumbnailUrl    String?
+  duration        String?  // ISO 8601
+  durationSec     Int      @default(0)
+  privacyStatus   String?
+  categoryId      String?
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  daily           VideoDaily[]
+  studio          StudioSnapshot[]
+  recommendations Recommendation[]
+  changes         Change[]
+  draft           Draft?
+}
+
+/// One row per own video per day, from Analytics API (typed subset; raw in AnalyticsReport).
+model VideoDaily {
+  id                     String   @id @default(uuid())
+  videoId                String
+  video                  Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  date                   DateTime
+  views                  Int      @default(0)
+  estimatedMinutesWatched Float   @default(0)
+  averageViewDuration    Float    @default(0)
+  averageViewPercentage  Float    @default(0)
+  subscribersGained      Int      @default(0)
+  subscribersLost        Int      @default(0)
+  likes                  Int      @default(0)
+  comments               Int      @default(0)
+  shares                 Int      @default(0)
+  estimatedRevenue       Float?
+  cpm                    Float?
+  @@unique([videoId, date])
+  @@index([date])
+}
+
+/// Impressions + CTR are Studio-only: imported from CSV export for a date range.
+model StudioSnapshot {
+  id          String   @id @default(uuid())
+  videoId     String
+  video       Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  rangeStart  DateTime
+  rangeEnd    DateTime
+  impressions Int
+  ctr         Float    // percent
+  views       Int?
+  avdSec      Float?
+  importedAt  DateTime @default(now())
+  @@unique([videoId, rangeStart, rangeEnd])
+}
+
+/// Every Analytics API response, verbatim. kind = report name (see src/lib/analytics.ts).
+model AnalyticsReport {
+  id         String   @id @default(uuid())
+  channelId  String
+  channel    Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  videoId    String   @default("") // "" = channel-level
+  kind       String
+  rangeStart DateTime
+  rangeEnd   DateTime
+  json       String
+  fetchedAt  DateTime @default(now())
+  @@unique([channelId, videoId, kind, rangeStart, rangeEnd])
+}
+
+model Recommendation {
+  id        String   @id @default(uuid())
+  channelId String
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  videoId   String?
+  video     Video?   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  title     String
+  rationale String   // must cite numbers
+  priority  Int      @default(3) // 1 = highest
+  source    String   // audit | heuristic | new-video
+  status    String   @default("open") // open | applied | dismissed
+  createdAt DateTime @default(now())
+  steps     Step[]
+}
+
+model Step {
+  id               String   @id @default(uuid())
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  order            Int
+  kind             String   // api | manual
+  field            String?  // title | description | tags | thumbnail | playlist
+  payload          String?  // JSON: new value (string, string[], or {path})
+  instructions     String
+  status           String   @default("pending") // pending | applied | skipped
+  appliedAt        DateTime?
+  change           Change?
+}
+
+/// Audit log of every write to YouTube. Restore creates a new Change pointing back.
+model Change {
+  id                  String   @id @default(uuid())
+  videoId             String
+  video               Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  stepId              String?  @unique
+  step                Step?    @relation(fields: [stepId], references: [id])
+  field               String
+  before              String   // JSON
+  after               String   // JSON
+  beforeThumbnailPath String?  // data/thumbnails/<videoId>/<changeId>.jpg
+  restoresChangeId    String?
+  appliedAt           DateTime @default(now())
+}
+
+model Draft {
+  id          String   @id @default(uuid())
+  channelId   String
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  videoId     String?  @unique
+  video       Video?   @relation(fields: [videoId], references: [id])
+  input       String   // JSON {manhwa, hook, emotion, ...}
+  output      String   // JSON {titles[], description, tags[], thumbnailPrompt, overlays[]}
+  chosenTitle String?
+  createdAt   DateTime @default(now())
 }

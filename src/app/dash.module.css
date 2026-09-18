@@ -1,0 +1,27 @@
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+.tile { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; }
+.tileValue { font-size: 1.5rem; font-weight: 700; }
+.tileLabel { color: var(--text-secondary); font-size: 0.8rem; }
+.card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin: 16px 0; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.table th, .table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border-color); vertical-align: top; white-space: nowrap; }
+.table td.text { white-space: normal; min-width: 240px; }
+.table th { color: var(--text-secondary); font-weight: 600; }
+.num { text-align: right !important; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: 0.72rem; margin: 1px 3px 1px 0; border: 1px solid; }
+.red { background: var(--badge-red-bg); border-color: var(--badge-red-border); color: var(--badge-red-text); }
+.orange { background: var(--badge-orange-bg); border-color: var(--badge-orange-border); color: var(--badge-orange-text); }
+.green { background: var(--badge-green-bg); border-color: var(--badge-green-border); color: var(--badge-green-text); }
+.btn { background: var(--accent-color); color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; text-decoration: none; display: inline-block; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btnGhost { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+.warn { background: var(--badge-orange-bg); border: 1px solid var(--badge-orange-border); color: var(--badge-orange-text); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+.muted { color: var(--text-secondary); font-size: 0.85rem; }
+.progress { height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.progress > div { height: 100%; background: var(--accent-color); }
+.input { background: var(--bg-color); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 8px; font-size: 0.85rem; }
+.thumb { width: 160px; border-radius: 6px; border: 1px solid var(--border-color); }
+.step { border-top: 1px solid var(--border-color); padding: 10px 0; }
+.pre { white-space: pre-wrap; font-family: inherit; margin: 6px 0; }

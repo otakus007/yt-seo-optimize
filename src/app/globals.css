@@ -47,3 +47,6 @@ h1, h2, h3 {
   letter-spacing: -0.03em;
   font-weight: 700;
 }
+
+h1, h2, h3 { margin: 18px 0 8px; }
+a { color: inherit; }

@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# yt-seo-optimize
 
-## Getting Started
+Data-driven optimization for the owner's YouTube channels (Manhwa/Webtoon recap).
+Next.js 16 dashboard + SQLite + scripts, driven by any coding agent that reads `AGENTS.md`
+(Claude Code, Cursor, Codex, Antigravity, Grok Build).
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Setup (once)
 ```
+pnpm install
+bash scripts/setup-wizard.sh     # API key, OAuth client, TOKEN_KEY, Cloudflare, cron
+pnpm dev                         # http://localhost:3000 → Connect a YouTube channel
+pnpm sync                        # backfill Analytics (minutes on first run)
+```
+Impressions and CTR are not in the YouTube API: export Studio → Analytics → Content → CSV
+weekly and import it on the dashboard home page.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Daily use
+- Before uploading: ask your agent to run the `yt-new-video` skill.
+- Weekly: `yt-sync` → `yt-audit` → apply recommendations from the dashboard (each apply is
+  logged and restorable) → `yt-audit` again after 7/14 days to see what worked.
+- `yt-competitors` for outliers to copy; `yt-niche-research` is a stub.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
+`pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm sync` · `pnpm backup` ·
+`pnpm tsx scripts/{stats,competitors,keywords,import-studio,recommend,draft,add-competitor}.ts --help`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `AGENTS.md` (map + rules) and `docs/decisions/0001-rebuild.md` (why).

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Antigravity YT SEO",
-  description: "AI-powered YouTube SEO Optimization Dashboard",
+  title: "YT Optimizer",
+  description: "Data-driven YouTube channel optimization",
 };
 
 export default function RootLayout({

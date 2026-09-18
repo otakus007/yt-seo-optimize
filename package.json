@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint && bash scripts/check-harness.sh",
+    "typecheck": "tsc --noEmit",
+    "sync": "tsx scripts/sync.ts",
+    "backup": "tsx scripts/backup.ts",
     "pretest": "DATABASE_URL=file:./test.db pnpm prisma db push --skip-generate",
     "test": "DATABASE_URL=file:./test.db jest"
   },

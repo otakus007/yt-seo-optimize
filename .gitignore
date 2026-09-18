@@ -31,7 +31,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
 
 # vercel
 .vercel
@@ -42,20 +43,16 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# stale root-level db artifact (canonical db is prisma/dev.db)
-/dev.db
 
-.omc
 
-# working data JSON files (agent workspace output)
-/_workspace/
 
 # SWC build cache
 /.swc/
 
-# SQLite database files
-# NOTE: prisma/dev.db is intentionally tracked so it can be transferred between machines.
+# SQLite + backups + thumbnails (never commit)
+/data/
 /prisma/test.db
+/prisma/dev.db
 
-# temporary mockups/scratch files
-/scratch/
+.claude/settings.local.json
+.codegraph/

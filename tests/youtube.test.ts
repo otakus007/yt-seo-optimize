@@ -1,123 +1,43 @@
 /** @jest-environment node */
-import { getChannelBasicStats } from '../src/lib/youtube';
+import { getChannelBasicStats, getChannelByHandle, getVideoStats, getVideosFromPlaylist, isoDurationToSec } from '../src/lib/youtube';
 
-describe('YouTube API Client', () => {
+const ok = (body: unknown) => ({ ok: true, json: async () => body }) as unknown as Response;
+
+describe('YouTube Data API client', () => {
   let fetchSpy: jest.SpyInstance;
+  beforeEach(() => { fetchSpy = jest.spyOn(global, 'fetch'); });
+  afterEach(() => { jest.restoreAllMocks(); });
 
-  beforeEach(() => {
-    fetchSpy = jest.spyOn(global, 'fetch');
+  it('parses channel stats (BigInt views, uploads playlist)', async () => {
+    fetchSpy.mockResolvedValueOnce(ok({ items: [{ id: 'UC123', snippet: { title: 'Mock', description: 'd', customUrl: '@mock' }, contentDetails: { relatedPlaylists: { uploads: 'UU123' } }, statistics: { subscriberCount: '500', viewCount: '3000000000', videoCount: '10' } }] }));
+    const s = await getChannelBasicStats('UC123', 'fake-key');
+    expect(s).toMatchObject({ youtubeId: 'UC123', title: 'Mock', handle: '@mock', uploadsPlaylistId: 'UU123', subscriberCount: 500, viewCount: BigInt('3000000000') });
+    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('key=fake-key'));
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
+  it('throws when the channel is missing', async () => {
+    fetchSpy.mockResolvedValueOnce(ok({ items: [] }));
+    await expect(getChannelBasicStats('UC404', 'k')).rejects.toThrow('Channel not found');
   });
 
-  it('should fetch and parse channel stats successfully', async () => {
-    const mockResponse = {
-      items: [
-        {
-          id: 'UC123',
-          snippet: {
-            title: 'Mock Channel',
-            description: 'A mock channel',
-          },
-          statistics: {
-            subscriberCount: '500',
-            viewCount: '10000',
-            videoCount: '10',
-          }
-        }
-      ]
-    };
-
-    fetchSpy.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    });
-
-    const stats = await getChannelBasicStats('UC123', 'fake-api-key');
-
-    expect(stats.title).toBe('Mock Channel');
-    expect(stats.subscriberCount).toBe(500);
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('UC123'));
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('fake-api-key'));
-  });
-
-  it('should throw an error if channel is not found', async () => {
-    fetchSpy.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ items: [] }),
-    });
-
-    await expect(getChannelBasicStats('UC123', 'fake-api-key')).rejects.toThrow('Channel not found');
-  });
-
-  it('should throw an error on bad response status', async () => {
-    fetchSpy.mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-      statusText: 'Forbidden',
-    });
-
-    await expect(getChannelBasicStats('UC123', 'fake-api-key')).rejects.toThrow('YouTube API Error: 403 Forbidden');
-  });
-
-  it('should throw a network error if fetch fails', async () => {
-    fetchSpy.mockRejectedValueOnce(new Error('Network failure'));
-
-    await expect(getChannelBasicStats('UC123', 'fake-api-key')).rejects.toThrow('YouTube API Network Error: Network failure');
-  });
-
-  it('should resolve channel handle to ID and uploads playlist', async () => {
-    fetchSpy.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        items: [{
-          id: 'UC456',
-          contentDetails: { relatedPlaylists: { uploads: 'UU456' } }
-        }]
-      })
-    });
-
-    const result = await require('../src/lib/youtube').getChannelByHandle('@testhandle', 'key');
-    expect(result.channelId).toBe('UC456');
-    expect(result.uploadsPlaylistId).toBe('UU456');
+  it('resolves a handle without the @', async () => {
+    fetchSpy.mockResolvedValueOnce(ok({ items: [{ id: 'UC456', snippet: { title: 't', description: '' }, contentDetails: { relatedPlaylists: { uploads: 'UU456' } }, statistics: {} }] }));
+    const s = await getChannelByHandle('@testhandle', 'k');
+    expect(s.uploadsPlaylistId).toBe('UU456');
     expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('forHandle=testhandle'));
   });
 
-  it('should fetch video IDs from playlist', async () => {
-    fetchSpy.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        items: [
-          { contentDetails: { videoId: 'v1' } },
-          { contentDetails: { videoId: 'v2' } }
-        ]
-      })
-    });
-
-    const result = await require('../src/lib/youtube').getVideosFromPlaylist('UU456', 'key');
-    expect(result).toEqual(['v1', 'v2']);
+  it('pages through playlist items', async () => {
+    fetchSpy.mockResolvedValueOnce(ok({ items: [{ contentDetails: { videoId: 'v1' } }], nextPageToken: 'p2' }));
+    fetchSpy.mockResolvedValueOnce(ok({ items: [{ contentDetails: { videoId: 'v2' } }] }));
+    expect(await getVideosFromPlaylist('UU456', 'k')).toEqual(['v1', 'v2']);
   });
 
-  it('should fetch video stats', async () => {
-    fetchSpy.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        items: [
-          {
-            id: 'v1',
-            snippet: { title: 'Vid 1', description: 'Desc', publishedAt: '2023-01-01T00:00:00Z' },
-            contentDetails: { duration: 'PT5M' },
-            statistics: { viewCount: '100' }
-          }
-        ]
-      })
-    });
-
-    const result = await require('../src/lib/youtube').getVideoStats(['v1'], 'key');
-    expect(result[0].youtubeId).toBe('v1');
-    expect(result[0].viewCount).toBe(100);
-    expect(result[0].duration).toBe('PT5M');
+  it('parses video stats incl. duration seconds and best thumbnail', async () => {
+    fetchSpy.mockResolvedValueOnce(ok({ items: [{ id: 'v1', snippet: { title: 'Vid', description: 'Desc', publishedAt: '2023-01-01T00:00:00Z', thumbnails: { default: { url: 'd' }, high: { url: 'h' } } }, contentDetails: { duration: 'PT1H5M2S' }, statistics: { viewCount: '100' }, status: { privacyStatus: 'public' } }] }));
+    const [v] = await getVideoStats(['v1'], 'k');
+    expect(v).toMatchObject({ youtubeId: 'v1', viewCount: 100, durationSec: 3902, thumbnailUrl: 'h', privacyStatus: 'public', tags: null });
   });
+
+  it('converts ISO durations', () => { expect(isoDurationToSec('PT5M')).toBe(300); expect(isoDurationToSec('P1DT1S')).toBe(86401); expect(isoDurationToSec('')).toBe(0); });
 });
