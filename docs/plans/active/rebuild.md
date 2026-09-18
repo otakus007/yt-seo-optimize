@@ -10,8 +10,9 @@ Status per item; move this file to `docs/plans/completed/` when all are done.
 - [x] Dashboard: proxy gate, OAuth connect, home, channel, video, competitors, Apply/Restore/Upload/Import actions
 - [x] Skills: yt-sync, yt-new-video, yt-audit, yt-competitors, yt-niche-research (stub), playbook
 - [x] Tests green (`pnpm lint && pnpm typecheck && pnpm test`)
-- [ ] Owner setup: Google Cloud OAuth client + Analytics API, `.env`, first connect, Cloudflare Tunnel + Access, crontab (sync + backup)
-- [ ] First real sync + Studio CSV import → first `yt-audit`
+- [x] Owner setup: Google Cloud OAuth client + Analytics API, `.env` (dashboard setup card), first connect (New Manhwa, @newmanhwa-e3i)
+  - Cloudflare Tunnel + Access and crontab (sync + backup) still pending — owner is running localhost-only for now.
+- [x] First real sync (28 videos, 951 VideoDaily rows) + Studio CSV import (27/28 matched; 1 id `Snl47EVf4ZQ` not in DB, skipped) → next: first `yt-audit`
 - [ ] Verify Cursor / Grok do not double-list skills via the `.claude/skills` symlink
   - 2026-09-18 docs check: Cursor reads `.agents/skills/` (primary) AND `.claude/skills/` (legacy) and walks recursively,
     no stated dedupe → may list each skill twice. Grok reads `.grok/skills/` + Claude Code paths (`.claude/skills/`), not
