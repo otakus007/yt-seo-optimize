@@ -40,6 +40,9 @@ Analytics data. Read this file first. Deeper "why" lives in `docs/decisions/`.
 - Multi-session change → `docs/plans/active/<slug>.md` first; move to `completed/` when done.
 - Material ambiguity → stop, present concrete options and consequences; do not guess.
 - Recommendations to the owner must cite numbers from the DB, never from intuition.
+- Owner-facing text (dashboard UI, recommendation `rationale`, step `instructions`, chat replies) is Vietnamese.
+  Values that get applied to YouTube (title/description/tags, Gemini prompts, thumbnail overlay text) and the
+  playbook file stay in `Channel.language` (English for this channel) since that's what the audience reads.
 
 ## Rules
 - Next.js here is v16: read `node_modules/next/dist/docs/` before writing app code. Middleware is `proxy.ts`. `params` are Promises.

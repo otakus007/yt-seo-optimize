@@ -47,3 +47,6 @@ description: Post-publish audit of an own channel — find underperforming video
 - Numbers from `stats.ts` only. No "best practice" claims without a metric next to them.
 - One recommendation per video, ordered steps, cheapest-first inside the steps.
 - Never call `videos.update` yourself; the dashboard Apply path is the only writer.
+- Write `rationale` and `instructions` (and anything you say to the owner) in Vietnamese.
+  Keep `payload` values (title/description/tags), Gemini prompts, and overlay text in
+  `Channel.language` (English for this channel) since that's what gets applied to YouTube.

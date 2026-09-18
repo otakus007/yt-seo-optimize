@@ -35,50 +35,50 @@ export default async function ChannelPage({ params, searchParams }: { params: Pr
 
   return (
     <div>
-      <Link href="/" className={styles.muted}>← Channels</Link>
-      <div className={styles.row}><h1>{ch.title}</h1><span className={styles.muted}>{ch.handle} · {ch.isOwn ? (ch.monetized ? 'monetized' : 'pre-YPP') : 'competitor'} · {ch.niche} · {ch.language}</span></div>
-      {ch.isOwn && (h == null || h > 24) && <div className={styles.warn}>Data is stale (last sync {h == null ? 'never' : `${h}h ago`}). Sync from the home page or run <code>pnpm sync</code>.</div>}
-      {ch.isOwn && b.medianCtr == null && <div className={styles.warn}>No CTR data yet. Import a Studio CSV on the home page to unlock CTR flags.</div>}
+      <Link href="/" className={styles.muted}>← Các kênh</Link>
+      <div className={styles.row}><h1>{ch.title}</h1><span className={styles.muted}>{ch.handle} · {ch.isOwn ? (ch.monetized ? 'đã kiếm tiền' : 'chưa YPP') : 'đối thủ'} · {ch.niche} · {ch.language}</span></div>
+      {ch.isOwn && (h == null || h > 24) && <div className={styles.warn}>Dữ liệu cũ (lần đồng bộ gần nhất {h == null ? "chưa bao giờ" : `${h}h trước`}). Đồng bộ từ trang chủ hoặc chạy <code>pnpm sync</code>.</div>}
+      {ch.isOwn && b.medianCtr == null && <div className={styles.warn}>Chưa có dữ liệu CTR. Nhập CSV từ Studio ở trang chủ để mở khóa cờ CTR.</div>}
 
       <div className={styles.tiles}>
-        <Tile value={n(ch.subscriberCount)} label="Subscribers" />
-        <Tile value={n(views28)} label="Views (28d)" />
-        {ch.monetized ? <><Tile value={money(rev28)} label="Revenue (28d)" /><Tile value={views28 ? money((rev28 / views28) * 1000) : '–'} label="RPM (28d)" /></>
-          : <Tile value={n(min28 / 60, 0)} label="Watch hours (28d)" />}
-        <Tile value={n(b.medianFirst7)} label="Median views, first 7d" />
-        <Tile value={pct(b.medianCtr)} label="Median CTR" />
-        <Tile value={pct(b.medianAvp, 0)} label="Median avg view %" />
+        <Tile value={n(ch.subscriberCount)} label="Người đăng ký" />
+        <Tile value={n(views28)} label="Views (28 ngày)" />
+        {ch.monetized ? <><Tile value={money(rev28)} label="Doanh thu (28 ngày)" /><Tile value={views28 ? money((rev28 / views28) * 1000) : '–'} label="RPM (28 ngày)" /></>
+          : <Tile value={n(min28 / 60, 0)} label="Giờ xem (28 ngày)" />}
+        <Tile value={n(b.medianFirst7)} label="Trung vị view, 7 ngày đầu" />
+        <Tile value={pct(b.medianCtr)} label="Trung vị CTR" />
+        <Tile value={pct(b.medianAvp, 0)} label="Trung vị % xem trung bình" />
       </div>
       {ypp && (
         <div className={styles.card}>
-          <h3>Progress to monetization {ypp.etaDays != null && <span className={styles.muted}>· ETA ≈ {ypp.etaDays} days at current pace</span>}</h3>
-          <div className={styles.muted}>{n(ypp.subscriberCount)} / 1,000 subscribers ({n(ypp.subsPerDay, 1)}/day)</div><div className={styles.progress}><div style={{ width: `${Math.min(100, ypp.subscriberCount / 10)}%` }} /></div>
-          <div className={styles.muted} style={{ marginTop: 8 }}>{n(ypp.hours)} / 4,000 watch hours in 365d ({n(ypp.hoursPerDay, 1)}/day)</div><div className={styles.progress}><div style={{ width: `${Math.min(100, ypp.hours / 40)}%` }} /></div>
+          <h3>Tiến độ kiếm tiền {ypp.etaDays != null && <span className={styles.muted}>· ETA ≈ {ypp.etaDays} ngày với tốc độ hiện tại</span>}</h3>
+          <div className={styles.muted}>{n(ypp.subscriberCount)} / 1.000 người đăng ký ({n(ypp.subsPerDay, 1)}/ngày)</div><div className={styles.progress}><div style={{ width: `${Math.min(100, ypp.subscriberCount / 10)}%` }} /></div>
+          <div className={styles.muted} style={{ marginTop: 8 }}>{n(ypp.hours)} / 4.000 giờ xem trong 365 ngày ({n(ypp.hoursPerDay, 1)}/ngày)</div><div className={styles.progress}><div style={{ width: `${Math.min(100, ypp.hours / 40)}%` }} /></div>
         </div>
       )}
 
-      <h2>Open recommendations ({recs.length})</h2>
+      <h2>Đề xuất đang mở ({recs.length})</h2>
       <Recommendations recs={recs} canApply={ch.isOwn && !!ch.refreshToken} />
 
-      <div className={styles.row}><h2>Videos ({videos.length})</h2><span className={styles.muted}>sort: <Link href="?sort=recent">recent</Link> · <Link href="?sort=views">views</Link> · <Link href="?sort=issues">issues</Link>{ch.monetized && <> · <Link href="?sort=revenue">revenue</Link></>}</span></div>
+      <div className={styles.row}><h2>Video ({videos.length})</h2><span className={styles.muted}>sắp xếp: <Link href="?sort=recent">gần đây</Link> · <Link href="?sort=views">views</Link> · <Link href="?sort=issues">vấn đề</Link>{ch.monetized && <> · <Link href="?sort=revenue">doanh thu</Link></>}</span></div>
       <div className={styles.wrap}><table className={styles.table}>
-        <thead><tr><th>Title</th><th>Published</th><th className={styles.num}>Views</th><th className={styles.num}>First 7d</th><th className={styles.num}>Last 28d</th><th className={styles.num}>CTR</th><th className={styles.num}>Avg view %</th>{ch.monetized && <th className={styles.num}>Revenue</th>}<th>Flags</th></tr></thead>
+        <thead><tr><th>Tiêu đề</th><th>Đăng lúc</th><th className={styles.num}>Views</th><th className={styles.num}>7 ngày đầu</th><th className={styles.num}>28 ngày qua</th><th className={styles.num}>CTR</th><th className={styles.num}>% xem TB</th>{ch.monetized && <th className={styles.num}>Doanh thu</th>}<th>Cờ</th></tr></thead>
         <tbody>{rows.map(({ v, f, f7, l28, ctr, avp, rev }) => (
           <tr key={v.id}><td className={styles.text}><Link href={`/video/${v.id}`}>{v.title}</Link></td><td>{date(v.publishedAt)}</td><td className={styles.num}>{n(v.viewCount)}</td><td className={styles.num}>{n(f7)}</td><td className={styles.num}>{n(l28)}</td><td className={styles.num}>{pct(ctr)}</td><td className={styles.num}>{pct(avp, 0)}</td>{ch.monetized && <td className={styles.num}>{money(rev)}</td>}<td><Badges flags={f} /></td></tr>
         ))}</tbody>
       </table></div>
 
-      <h2>Changes that worked best</h2>
+      <h2>Thay đổi hiệu quả nhất</h2>
       <Changes changes={bestChanges} />
-      <h2>All changes</h2>
+      <h2>Tất cả thay đổi</h2>
       <Changes changes={changeRows} />
 
-      <ReportTable title="Traffic sources" rows={await rep('traffic')} />
-      <ReportTable title="Top search terms" rows={await rep('search-terms')} />
-      <ReportTable title="Top countries" rows={await rep('country')} />
-      <ReportTable title="Devices" rows={await rep('device')} />
-      <ReportTable title="Subscribed vs not" rows={await rep('subscribed')} />
-      <ReportTable title="Demographics" rows={await rep('demographics')} limit={30} />
+      <ReportTable title="Nguồn traffic" rows={await rep('traffic')} />
+      <ReportTable title="Từ khóa tìm kiếm hàng đầu" rows={await rep('search-terms')} />
+      <ReportTable title="Quốc gia hàng đầu" rows={await rep('country')} />
+      <ReportTable title="Thiết bị" rows={await rep('device')} />
+      <ReportTable title="Đã đăng ký vs chưa" rows={await rep('subscribed')} />
+      <ReportTable title="Nhân khẩu học" rows={await rep('demographics')} limit={30} />
     </div>
   );
 }

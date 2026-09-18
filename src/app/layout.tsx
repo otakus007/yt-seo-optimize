@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "YT Optimizer",
-  description: "Data-driven YouTube channel optimization",
+  description: "Tối ưu kênh YouTube dựa trên dữ liệu thật",
 };
 
 export default function RootLayout({

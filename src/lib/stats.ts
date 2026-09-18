@@ -51,15 +51,15 @@ export function flags(v: VideoWithData, b: Baseline): Flag[] {
   const out: Flag[] = [];
   const ctr = latestCtr(v), avp = avgViewPct(v), f7 = first7DaysViews(v), l28 = last28Views(v);
   const tags: string[] = v.tags ? JSON.parse(v.tags) : [];
-  if (b.medianCtr != null && ctr != null && ctr < b.medianCtr * 0.8) out.push({ code: 'low-ctr', detail: `CTR ${ctr.toFixed(1)}% vs channel median ${b.medianCtr.toFixed(1)}%`, severity: 'red' });
-  if (b.medianAvp != null && avp != null && avp < b.medianAvp * 0.8) out.push({ code: 'low-retention', detail: `avg view ${avp.toFixed(0)}% vs median ${b.medianAvp.toFixed(0)}%`, severity: 'orange' });
-  if (v.publishedAt < daysAgo(7) && b.medianFirst7 > 0 && f7 < b.medianFirst7 * 0.5) out.push({ code: 'slow-start', detail: `${f7} views in first 7d vs median ${b.medianFirst7}`, severity: 'orange' });
-  if (b.medianLast28 > 0 && l28 > b.medianLast28 * 3) out.push({ code: 'outlier', detail: `${l28} views last 28d vs median ${b.medianLast28}`, severity: 'green' });
-  if (b.medianViews > 0 && v.viewCount > b.medianViews * 3) out.push({ code: 'top-performer', detail: `${v.viewCount} views vs median ${b.medianViews}`, severity: 'green' });
-  if (v.title.length > 70) out.push({ code: 'title-long', detail: `${v.title.length} chars`, severity: 'orange' });
-  if (tags.length === 0) out.push({ code: 'no-tags', detail: 'no tags', severity: 'orange' });
-  if ((v.description?.length ?? 0) < 100) out.push({ code: 'thin-description', detail: `${v.description?.length ?? 0} chars`, severity: 'orange' });
-  if (v.durationSec >= 600 && !/\d{1,2}:\d{2}/.test(v.description ?? '')) out.push({ code: 'no-timestamps', detail: 'long video without chapters', severity: 'orange' });
+  if (b.medianCtr != null && ctr != null && ctr < b.medianCtr * 0.8) out.push({ code: 'low-ctr', detail: `CTR ${ctr.toFixed(1)}% so với trung vị kênh ${b.medianCtr.toFixed(1)}%`, severity: 'red' });
+  if (b.medianAvp != null && avp != null && avp < b.medianAvp * 0.8) out.push({ code: 'low-retention', detail: `xem trung bình ${avp.toFixed(0)}% so với trung vị ${b.medianAvp.toFixed(0)}%`, severity: 'orange' });
+  if (v.publishedAt < daysAgo(7) && b.medianFirst7 > 0 && f7 < b.medianFirst7 * 0.5) out.push({ code: 'slow-start', detail: `${f7} views trong 7 ngày đầu so với trung vị ${b.medianFirst7}`, severity: 'orange' });
+  if (b.medianLast28 > 0 && l28 > b.medianLast28 * 3) out.push({ code: 'outlier', detail: `${l28} views 28 ngày qua so với trung vị ${b.medianLast28}`, severity: 'green' });
+  if (b.medianViews > 0 && v.viewCount > b.medianViews * 3) out.push({ code: 'top-performer', detail: `${v.viewCount} views so với trung vị ${b.medianViews}`, severity: 'green' });
+  if (v.title.length > 70) out.push({ code: 'title-long', detail: `${v.title.length} ký tự`, severity: 'orange' });
+  if (tags.length === 0) out.push({ code: 'no-tags', detail: 'chưa có tag', severity: 'orange' });
+  if ((v.description?.length ?? 0) < 100) out.push({ code: 'thin-description', detail: `${v.description?.length ?? 0} ký tự`, severity: 'orange' });
+  if (v.durationSec >= 600 && !/\d{1,2}:\d{2}/.test(v.description ?? '')) out.push({ code: 'no-timestamps', detail: 'video dài nhưng không có chương mục', severity: 'orange' });
   return out;
 }
 

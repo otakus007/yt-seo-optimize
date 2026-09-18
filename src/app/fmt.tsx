@@ -7,8 +7,15 @@ export const money = (x: number | null | undefined) => (x == null ? '–' : `$${
 export const date = (d: Date | string | null | undefined) => (d ? new Date(d).toISOString().slice(0, 10) : '–');
 export const hoursAgo = (d: Date | null | undefined) => (d ? Math.round((Date.now() - new Date(d).getTime()) / 3600000) : null);
 
+/** Flag codes are stable identifiers (matched in code/tests); only the on-screen label is Vietnamese. */
+const FLAG_LABELS: Record<string, string> = {
+  'low-ctr': 'CTR thấp', 'low-retention': 'giữ chân thấp', 'slow-start': 'khởi đầu chậm',
+  outlier: 'nổi bật', 'top-performer': 'hiệu suất cao', 'title-long': 'tiêu đề dài',
+  'no-tags': 'thiếu tag', 'thin-description': 'mô tả sơ sài', 'no-timestamps': 'thiếu mốc thời gian',
+};
+
 export function Badges({ flags }: { flags: Flag[] }) {
-  return <>{flags.map((f) => <span key={f.code} className={`${styles.badge} ${styles[f.severity]}`} title={f.detail}>{f.code}</span>)}</>;
+  return <>{flags.map((f) => <span key={f.code} className={`${styles.badge} ${styles[f.severity]}`} title={f.detail}>{FLAG_LABELS[f.code] ?? f.code}</span>)}</>;
 }
 
 export function Tile({ value, label }: { value: string; label: string }) {

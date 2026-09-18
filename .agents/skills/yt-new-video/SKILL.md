@@ -41,3 +41,5 @@ series, and which channel (`@handle`) if more than one own channel exists.
 ## Rules
 - No title without a number behind it (search term views, outlier multiple, baseline).
 - Never invent series facts; use only what the owner gave you.
+- Talk to the owner in Vietnamese. Titles/description/tags/Gemini prompt/overlay text stay
+  in `Channel.language` (English for this channel) — that's what gets published to YouTube.
