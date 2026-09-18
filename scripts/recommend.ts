@@ -5,7 +5,7 @@
  *          steps: [{ kind: "api"|"manual", field?, payload?, instructions }] }
  */
 import { readFileSync } from 'fs';
-import prisma from '../src/lib/db';
+import prisma, { findChannel } from '../src/lib/db';
 import { out, positional } from './_cli';
 
 interface StepIn { kind: 'api' | 'manual'; field?: string; payload?: unknown; instructions: string }
@@ -18,7 +18,7 @@ async function main() {
   const created = [];
   for (const r of items) {
     const video = r.videoId ? await prisma.video.findUniqueOrThrow({ where: { youtubeId: r.videoId } }) : null;
-    const channelId = video?.channelId ?? (await prisma.channel.findFirstOrThrow({ where: { OR: [{ id: r.channel }, { handle: r.channel }] } })).id;
+    const channelId = video?.channelId ?? (await findChannel(r.channel)).id;
     if (!r.rationale || !/\d/.test(r.rationale)) throw new Error(`rationale must cite numbers: ${r.title}`);
     const rec = await prisma.recommendation.create({
       data: {

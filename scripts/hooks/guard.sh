@@ -9,7 +9,7 @@
 payload=$(cat | sed 's/<<.*//')
 deny=""
 if grep -Eq 'migrate +reset|--force-reset|--accept-data-loss' <<<"$payload"; then deny="prisma reset / force-reset / accept-data-loss is forbidden on the real DB"; fi
-if grep -Eq 'rm +(-[a-zA-Z]+ +)*[^ ]*(data/|app\.db|backups|\.env)' <<<"$payload"; then deny="rm of data/, app.db, backups or .env is forbidden"; fi
+if grep -Eq 'rm +(-[a-zA-Z]+ +)*[^ ]*(\bdata\b|app\.db|backups|\.env)|find +[^|;&]*\bdata\b[^|;&]*-delete' <<<"$payload"; then deny="rm of data/, app.db, backups or .env is forbidden"; fi
 if grep -Eq 'git +clean[^|;&]*-[a-zA-Z]*x' <<<"$payload"; then deny="git clean -x would wipe data/ and .env"; fi
 if grep -Eq 'DROP +TABLE|DELETE +FROM +(Change|Recommendation|Draft|StudioSnapshot)' <<<"$payload"; then deny="destructive SQL on history tables"; fi
 if grep -Eq '> *data/app\.db|truncate[^|;&]*app\.db' <<<"$payload"; then deny="overwriting app.db"; fi

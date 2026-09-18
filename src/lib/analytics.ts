@@ -90,6 +90,7 @@ export async function syncAnalytics({ token, channelId, monetized, log = () => {
   await storeRaw(channelId, '', 'channel-daily', chStart, end, chDaily);
   log(`channel-daily ${chStart}..${end}: ${chDaily.rows.length} rows`);
 
+  let failed = 0;
   for (const v of channel.videos) {
     const vStart = day(since && since > v.publishedAt ? since : v.publishedAt);
     if (vStart > end) continue;
@@ -102,12 +103,15 @@ export async function syncAnalytics({ token, channelId, monetized, log = () => {
       }
       log(`daily ${v.youtubeId} ${vStart}..${end}: ${rep.rows.length} rows`);
     } catch (e) {
+      failed++;
       log(`daily ${v.youtubeId} failed: ${(e as Error).message}`);
     }
     await refreshSnapshots(token, channelId, v.youtubeId, day(v.publishedAt), end, log);
   }
   await refreshSnapshots(token, channelId, '', day(earliest), end, log);
-  await prisma.channel.update({ where: { id: channelId }, data: { lastAnalyticsDate: new Date(end) } });
+  // ponytail: any failure keeps the watermark so the next run re-fetches the whole range; per-video watermarks if one video errors forever.
+  if (failed) log(`${failed} video(s) failed; lastAnalyticsDate not advanced`);
+  else await prisma.channel.update({ where: { id: channelId }, data: { lastAnalyticsDate: new Date(end) } });
 }
 
 async function refreshSnapshots(token: string, channelId: string, videoId: string, start: string, end: string, log: (s: string) => void) {

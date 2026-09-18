@@ -4,18 +4,10 @@
  * Channel mode: baseline, per-video metrics + flags, underperformers, open recommendations, change results.
  * Video mode: everything about one video incl. traffic, search terms, retention curve.
  */
-import prisma from '../src/lib/db';
+import prisma, { findChannel } from '../src/lib/db';
 import { latestReport, reportToObjects } from '../src/lib/analytics';
 import { avgViewPct, baseline, channelVideos, compareChange, first7DaysViews, flags, last28Views, latestCtr, revenue, yppProgress } from '../src/lib/stats';
 import { opt, out } from './_cli';
-
-async function findChannel(ref?: string) {
-  const ch = ref
-    ? await prisma.channel.findFirst({ where: { OR: [{ id: ref }, { youtubeId: ref }, { handle: ref.startsWith('@') ? ref : `@${ref}` }] } })
-    : await prisma.channel.findFirst({ where: { isOwn: true }, orderBy: { createdAt: 'asc' } });
-  if (!ch) throw new Error('channel not found');
-  return ch;
-}
 
 async function channelStats(ref?: string) {
   const ch = await findChannel(ref);

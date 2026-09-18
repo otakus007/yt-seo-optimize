@@ -19,7 +19,9 @@ export interface VideoWithData {
 export function viewsInWindow(v: VideoWithData, from: Date, to: Date) {
   return sum(v.daily.filter((d) => d.date >= from && d.date < to).map((d) => d.views));
 }
-export const first7DaysViews = (v: VideoWithData) => viewsInWindow(v, v.publishedAt, new Date(v.publishedAt.getTime() + 7 * 86400000));
+const startOfDay = (d: Date) => new Date(Math.floor(d.getTime() / 86400000) * 86400000);
+// VideoDaily.date is UTC midnight; start from the publish day so day 0 counts.
+export const first7DaysViews = (v: VideoWithData) => viewsInWindow(v, startOfDay(v.publishedAt), new Date(startOfDay(v.publishedAt).getTime() + 7 * 86400000));
 export const last28Views = (v: VideoWithData) => viewsInWindow(v, daysAgo(28), new Date());
 export const latestCtr = (v: VideoWithData) => [...v.studio].sort((a, b) => +b.rangeEnd - +a.rangeEnd)[0]?.ctr ?? null;
 export const avgViewPct = (v: VideoWithData) => {
@@ -63,11 +65,15 @@ export function flags(v: VideoWithData, b: Baseline): Flag[] {
 
 /** Before/after for one Change: views/day and CTR over N days each side. */
 export function compareChange(v: VideoWithData, appliedAt: Date, days: number) {
+  const windowEnd = appliedAt.getTime() + days * 86400000;
+  // Analytics lags 2-3 days: judge completeness and the after-divisor by the data we actually have, not the wall clock.
+  const lastData = Math.max(0, ...v.daily.map((d) => d.date.getTime() + 86400000));
+  const complete = lastData >= windowEnd;
+  const coveredDays = complete ? days : Math.max(1, Math.min(days, Math.ceil((lastData - appliedAt.getTime()) / 86400000)));
   const before = viewsInWindow(v, new Date(appliedAt.getTime() - days * 86400000), appliedAt) / days;
-  const after = viewsInWindow(v, appliedAt, new Date(appliedAt.getTime() + days * 86400000)) / days;
+  const after = viewsInWindow(v, appliedAt, new Date(windowEnd)) / coveredDays;
   const snapBefore = v.studio.filter((s) => s.rangeEnd <= appliedAt).sort((a, b) => +b.rangeEnd - +a.rangeEnd)[0];
   const snapAfter = v.studio.filter((s) => s.rangeStart >= appliedAt).sort((a, b) => +a.rangeStart - +b.rangeStart)[0];
-  const complete = Date.now() >= appliedAt.getTime() + days * 86400000;
   return { days, viewsPerDayBefore: before, viewsPerDayAfter: after, ctrBefore: snapBefore?.ctr ?? null, ctrAfter: snapAfter?.ctr ?? null, complete };
 }
 

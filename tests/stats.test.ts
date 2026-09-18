@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { baseline, compareChange, flags, median, yppProgress, type VideoWithData } from '../src/lib/stats';
+import { baseline, compareChange, first7DaysViews, flags, median, yppProgress, type VideoWithData } from '../src/lib/stats';
 
 const day = (offset: number) => new Date(Date.now() - offset * 86400000);
 function video(over: Partial<VideoWithData> & { viewsPerDay?: number; days?: number; ctr?: number }): VideoWithData {
@@ -33,6 +33,21 @@ describe('stats', () => {
     expect(c.viewsPerDayBefore).toBe(100);
     expect(c.viewsPerDayAfter).toBe(200);
     expect(c.complete).toBe(true);
+  });
+
+  it('marks a comparison partial when daily data stops before the window ends', () => {
+    const v = video({ days: 30 });
+    v.daily = v.daily.map((d, i) => ({ ...d, views: i < 20 ? 100 : 200 })).slice(0, 24);
+    const c = compareChange(v, v.daily[20].date, 7);
+    expect(c.complete).toBe(false);
+    expect(c.viewsPerDayAfter).toBe(200);
+  });
+
+  it('counts the publish day in first-7-day views even when published mid-day', () => {
+    const v = video({ days: 30 });
+    v.daily = v.daily.map((d) => ({ ...d, date: new Date(Math.floor(d.date.getTime() / 86400000) * 86400000) }));
+    v.publishedAt = new Date(v.daily[0].date.getTime() + 15 * 3600000);
+    expect(first7DaysViews(v)).toBe(700);
   });
 
   it('estimates YPP eta from the last 28 days', () => {

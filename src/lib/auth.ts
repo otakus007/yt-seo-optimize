@@ -35,7 +35,14 @@ export async function verifyAccessJwt(token: string | null): Promise<boolean> {
 export async function isAuthorized(req: { headers: { get(n: string): string | null } }): Promise<boolean> {
   const host = req.headers.get('host') ?? '';
   const publicHost = process.env.PUBLIC_ORIGIN ? new URL(process.env.PUBLIC_ORIGIN).host : '';
-  if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) return true;
+  // Host is client-controlled; the server binds 127.0.0.1 (package.json -H) so only local processes and the tunnel reach it.
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) return true;
   if (publicHost && host === publicHost) return verifyAccessJwt(req.headers.get('cf-access-jwt-assertion'));
   return false;
+}
+
+/** Origin to build absolute URLs from (OAuth redirect_uri): PUBLIC_ORIGIN when the request came through it, else the local one. */
+export function requestOrigin(req: { headers: { get(n: string): string | null }; nextUrl: { origin: string } }): string {
+  const pub = process.env.PUBLIC_ORIGIN;
+  return pub && req.headers.get('host') === new URL(pub).host ? pub : req.nextUrl.origin;
 }

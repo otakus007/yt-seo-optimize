@@ -3,16 +3,14 @@
  *   pnpm tsx scripts/sync.ts [--channel <handle|youtubeId|id>] [--own-only|--competitors-only] [--json]
  * Incremental by default; re-fetches the last 7 analytics days each run.
  */
-import prisma from '../src/lib/db';
+import prisma, { findChannel } from '../src/lib/db';
 import { syncChannel } from '../src/lib/sync';
 import { flag, log, opt, out } from './_cli';
 
 async function main() {
   const one = opt('channel');
-  const where = one
-    ? { OR: [{ youtubeId: one }, { handle: one.startsWith('@') ? one : `@${one}` }, { id: one }] }
-    : flag('own-only') ? { isOwn: true } : flag('competitors-only') ? { isOwn: false } : {};
-  const channels = await prisma.channel.findMany({ where, orderBy: { isOwn: 'desc' } });
+  const where = flag('own-only') ? { isOwn: true } : flag('competitors-only') ? { isOwn: false } : {};
+  const channels = one ? [await findChannel(one)] : await prisma.channel.findMany({ where, orderBy: { isOwn: 'desc' } });
   if (!channels.length) throw new Error('No matching channels. Connect one in the dashboard or run add-competitor.ts');
   const results = [];
   for (const c of channels) {

@@ -5,14 +5,14 @@
  *   pnpm tsx scripts/draft.ts list [--json]
  */
 import { readFileSync } from 'fs';
-import prisma from '../src/lib/db';
+import prisma, { findChannel } from '../src/lib/db';
 import { out, positional } from './_cli';
 
 async function main() {
   const [cmd, a, b] = positional;
   if (cmd === 'save') {
     const d = JSON.parse(readFileSync(0, 'utf8'));
-    const ch = await prisma.channel.findFirstOrThrow({ where: { OR: [{ id: d.channel }, { handle: d.channel }, { isOwn: d.channel ? undefined : true }] } });
+    const ch = await findChannel(d.channel || undefined);
     const draft = await prisma.draft.create({ data: { channelId: ch.id, input: JSON.stringify(d.input), output: JSON.stringify(d.output), chosenTitle: d.chosenTitle } });
     return out({ id: draft.id });
   }

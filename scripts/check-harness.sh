@@ -14,5 +14,8 @@ for f in .claude/settings.json .cursor/hooks.json .codex/hooks.json .agents/hook
 done
 [ -x scripts/hooks/guard.sh ] || err "guard.sh not executable"
 echo '{"tool_input":{"command":"pnpm prisma migrate reset"}}' | bash scripts/hooks/guard.sh 2>/dev/null && err "guard.sh failed to block migrate reset"
+for c in "rm -rf data" "rm -rf ./data" "find data -delete" "rm data/app.db"; do
+  echo "{\"tool_input\":{\"command\":\"$c\"}}" | bash scripts/hooks/guard.sh 2>/dev/null && err "guard.sh failed to block: $c"
+done
 echo '{"tool_input":{"command":"pnpm test"}}' | bash scripts/hooks/guard.sh 2>/dev/null || err "guard.sh blocked a safe command"
 exit $fail

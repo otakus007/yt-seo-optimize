@@ -31,24 +31,10 @@ export async function applyField(t: Target, field: Field, value: unknown, meta: 
   const token = await accessTokenFor(t.channel);
   const live = await getVideoLive(token, t.video.youtubeId);
   const changeId = randomUUID();
-  let before: unknown, beforeThumbnailPath: string | null = null;
-  const local: Record<string, unknown> = {};
+  const before = field === 'thumbnail' ? live.thumbnailUrl : field === 'playlist' ? null : live[field];
+  const beforeThumbnailPath = field === 'thumbnail' ? await saveCurrentThumbnail(t.video.youtubeId, live.thumbnailUrl, changeId) : null;
 
-  if (field === 'thumbnail') {
-    const file = (value as { path: string }).path;
-    beforeThumbnailPath = await saveCurrentThumbnail(t.video.youtubeId, live.thumbnailUrl, changeId);
-    await setThumbnail(token, t.video.youtubeId, await readFile(path.resolve(process.cwd(), file)));
-    before = live.thumbnailUrl;
-  } else if (field === 'playlist') {
-    await addToPlaylist(token, String(value), t.video.youtubeId);
-    before = null;
-  } else {
-    const next: LiveSnippet = { ...live, [field]: value };
-    before = live[field];
-    await updateVideoSnippet(token, t.video.youtubeId, next);
-    local[field] = field === 'tags' ? JSON.stringify(value) : value;
-  }
-
+  // Record first: a DB failure (lock, duplicate stepId) then aborts before YouTube is touched.
   const change = await prisma.change.create({
     data: {
       id: changeId, videoId: t.video.id, stepId: meta.stepId, field,
@@ -56,7 +42,19 @@ export async function applyField(t: Target, field: Field, value: unknown, meta: 
       beforeThumbnailPath, restoresChangeId: meta.restoresChangeId,
     },
   });
-  if (Object.keys(local).length) await prisma.video.update({ where: { id: t.video.id }, data: local });
+  try {
+    if (field === 'thumbnail') {
+      await setThumbnail(token, t.video.youtubeId, await readFile(path.resolve(process.cwd(), (value as { path: string }).path)));
+    } else if (field === 'playlist') {
+      await addToPlaylist(token, String(value), t.video.youtubeId);
+    } else {
+      await updateVideoSnippet(token, t.video.youtubeId, { ...live, [field]: value } as LiveSnippet);
+      await prisma.video.update({ where: { id: t.video.id }, data: { [field]: field === 'tags' ? JSON.stringify(value) : value } });
+    }
+  } catch (e) {
+    await prisma.change.delete({ where: { id: changeId } }).catch(() => {});
+    throw e;
+  }
   return change;
 }
 
