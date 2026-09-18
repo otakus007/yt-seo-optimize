@@ -4,9 +4,11 @@ export function parseStudioCsv(text: string) {
   const cols = splitCsv(lines[0]).map((c) => c.trim().toLowerCase());
   const col = (...names: string[]) => { const i = cols.findIndex((c) => names.includes(c)); return i >= 0 ? i : cols.findIndex((c) => names.some((n) => c.startsWith(n))); };
   const num = (s: string | undefined) => Number(String(s ?? '').replace(/[,%]/g, '')) || 0;
-  const iId = col('content', 'video'), iImp = col('impressions'), iCtr = col('impressions click-through rate', 'impressions ctr', 'click-through');
+  // Studio's Advanced Mode "Table data" export labels these "Thumbnail impressions" / "Thumbnail click-through rate (%)";
+  // the basic Content tab export uses "Impressions" / "Impressions click-through rate (%)". Accept both.
+  const iId = col('content', 'video'), iImp = col('impressions', 'thumbnail impressions'), iCtr = col('impressions click-through rate', 'impressions ctr', 'thumbnail click-through rate', 'thumbnail ctr', 'click-through');
   const iViews = col('views'), iAvd = col('average view duration');
-  if (iId < 0 || iImp < 0 || iCtr < 0) throw new Error(`CSV needs Content, Impressions, Impressions click-through rate columns; got: ${cols.join(' | ')}`);
+  if (iId < 0 || iImp < 0 || iCtr < 0) throw new Error(`CSV needs Content, Impressions (or Thumbnail impressions), and a click-through rate column; got: ${cols.join(' | ')}`);
   return lines.slice(1).map(splitCsv).filter((r) => /^[\w-]{11}$/.test(r[iId] ?? '')).map((r) => ({
     youtubeId: r[iId], impressions: Math.round(num(r[iImp])), ctr: num(r[iCtr]),
     views: iViews >= 0 ? Math.round(num(r[iViews])) : null, avdSec: iAvd >= 0 ? hms(r[iAvd]) : null,

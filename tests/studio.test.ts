@@ -17,6 +17,11 @@ describe('Studio CSV', () => {
     const rows = parseStudioCsv('Content,Impressions click-through rate (%),Impressions\nabcdefghijk,5.2,"8,000"\n');
     expect(rows[0]).toMatchObject({ impressions: 8000, ctr: 5.2 });
   });
+  it('parses the Advanced Mode "Table data" export, which labels these columns "Thumbnail impressions" / "Thumbnail click-through rate (%)"', () => {
+    const rows = parseStudioCsv('Content,Video title,Engaged views,Thumbnail impressions,Thumbnail click-through rate (%),Views,Average view duration\nTotal,,0,"12,000",4.5,900,0:03:10\nabcdefghijk,Title,0,"8,000",5.2,600,0:04:01\n');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ youtubeId: 'abcdefghijk', impressions: 8000, ctr: 5.2, views: 600, avdSec: 241 });
+  });
   it('fails loudly on a CSV without impressions', () => {
     expect(() => parseStudioCsv('Content,Views\nabcdefghijk,5\n')).toThrow(/Impressions/);
   });
