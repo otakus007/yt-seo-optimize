@@ -1,6 +1,7 @@
 'use server';
 import { spawn } from 'child_process';
-import { mkdirSync, openSync } from 'fs';
+import { randomBytes } from 'crypto';
+import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { mkdir, writeFile } from 'fs/promises';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
@@ -73,6 +74,22 @@ export async function setChannelFlagsAction(fd: FormData) {
 export async function addCompetitorAction(fd: FormData) {
   await guard();
   await addCompetitor(str(fd, 'handle'));
+  revalidatePath('/');
+}
+
+/** One-time setup from the dashboard: writes GOOGLE_CLIENT_ID/SECRET (and TOKEN_KEY if missing) to .env. */
+export async function saveGoogleCredsAction(fd: FormData) {
+  await guard();
+  const id = str(fd, 'clientId').trim(), secret = str(fd, 'clientSecret').trim();
+  if (!id || !secret) throw new Error('Client ID and secret required');
+  const set: Record<string, string> = { GOOGLE_CLIENT_ID: id, GOOGLE_CLIENT_SECRET: secret };
+  if (!process.env.TOKEN_KEY) set.TOKEN_KEY = randomBytes(32).toString('hex');
+  let env = existsSync('.env') ? readFileSync('.env', 'utf8') : '';
+  for (const [k, v] of Object.entries(set)) {
+    env = new RegExp(`^${k}=`, 'm').test(env) ? env.replace(new RegExp(`^${k}=.*$`, 'm'), `${k}=${v}`) : `${env.replace(/\n?$/, '\n')}${k}=${v}\n`;
+    process.env[k] = v; // effective immediately, no restart
+  }
+  writeFileSync('.env', env);
   revalidatePath('/');
 }
 

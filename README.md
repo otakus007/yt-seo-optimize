@@ -7,8 +7,8 @@ Next.js 16 dashboard + SQLite + scripts, driven by any coding agent that reads `
 ## Setup (once)
 ```
 pnpm install
-bash scripts/setup-wizard.sh     # API key, OAuth client, TOKEN_KEY, Cloudflare, cron
-pnpm dev                         # http://localhost:3000 → Connect a YouTube channel
+bash scripts/setup-wizard.sh     # optional: API key, OAuth client, TOKEN_KEY, Cloudflare, cron
+pnpm dev                         # http://localhost:3000 → paste the Google OAuth client there → Connect a YouTube channel
 pnpm sync                        # backfill Analytics (minutes on first run)
 ```
 Impressions and CTR are not in the YouTube API: export Studio → Analytics → Content → CSV

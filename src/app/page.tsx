@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import Link from 'next/link';
 import prisma from '@/lib/db';
 import styles from './dash.module.css';
-import { addCompetitorAction, importStudioAction, setChannelFlagsAction, startSync } from './actions';
+import { addCompetitorAction, importStudioAction, saveGoogleCredsAction, setChannelFlagsAction, startSync } from './actions';
 import { date, hoursAgo, n } from './fmt';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +12,7 @@ export default async function Home() {
   const drafts = await prisma.draft.findMany({ orderBy: { createdAt: 'desc' }, take: 10, include: { video: { select: { id: true, title: true } } } });
   const log = existsSync('data/sync.log') ? readFileSync('data/sync.log', 'utf8').trim().split('\n').slice(-8).join('\n') : '';
   const own = channels.filter((c) => c.isOwn), comp = channels.filter((c) => !c.isOwn);
+  const needsCreds = !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET;
 
   return (
     <div>
@@ -21,7 +22,21 @@ export default async function Home() {
         <form action={startSync}><button className={`${styles.btn} ${styles.btnGhost}`}>Sync all</button></form>
         <Link className={`${styles.btn} ${styles.btnGhost}`} href="/competitors">Competitors</Link>
       </div>
-      {own.length === 0 && <div className={styles.warn}>No own channel connected yet. Click &quot;Connect a YouTube channel&quot; (needs GOOGLE_CLIENT_ID/SECRET and TOKEN_KEY in .env).</div>}
+      {needsCreds ? (
+        <div className={styles.card}>
+          <h3>Setup: Google OAuth client (once)</h3>
+          <ol className={styles.muted}>
+            <li><a href="https://console.cloud.google.com/apis/library" target="_blank" rel="noreferrer">APIs &amp; Services → Library</a>: enable <b>YouTube Data API v3</b> and <b>YouTube Analytics API</b>.</li>
+            <li><a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noreferrer">OAuth consent screen</a>: External, add each channel&apos;s Google email as a test user, then <b>Publish app</b> (otherwise refresh tokens expire after 7 days).</li>
+            <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer">Credentials</a> → Create OAuth client ID → Web application → Authorized redirect URI: <code>http://localhost:3000/api/oauth/callback</code>{process.env.PUBLIC_ORIGIN ? <> and <code>{process.env.PUBLIC_ORIGIN}/api/oauth/callback</code></> : null}.</li>
+          </ol>
+          <form action={saveGoogleCredsAction} className={styles.row}>
+            <input className={styles.input} name="clientId" placeholder="Client ID" required style={{ minWidth: 320 }} />
+            <input className={styles.input} name="clientSecret" placeholder="Client secret" type="password" required />
+            <button className={styles.btn}>Save to .env</button>
+          </form>
+        </div>
+      ) : own.length === 0 && <div className={styles.warn}>No own channel connected yet. Click &quot;Connect a YouTube channel&quot; in the browser profile that is signed in to the channel&apos;s Google account.</div>}
 
       <h2>Own channels</h2>
       {own.map((c) => {
