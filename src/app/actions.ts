@@ -81,7 +81,8 @@ export async function addCompetitorAction(fd: FormData) {
 export async function saveGoogleCredsAction(fd: FormData) {
   await guard();
   const id = str(fd, 'clientId').trim(), secret = str(fd, 'clientSecret').trim();
-  if (!id || !secret) throw new Error('Client ID and secret required');
+  if (!id.endsWith('.apps.googleusercontent.com')) throw new Error('Client ID should end with .apps.googleusercontent.com');
+  if (!secret.startsWith('GOCSPX-')) throw new Error('Client secret should start with GOCSPX- (open the client in Credentials, or the "client_secret" field of the downloaded JSON; not the file name)');
   const set: Record<string, string> = { GOOGLE_CLIENT_ID: id, GOOGLE_CLIENT_SECRET: secret };
   if (!process.env.TOKEN_KEY) set.TOKEN_KEY = randomBytes(32).toString('hex');
   let env = existsSync('.env') ? readFileSync('.env', 'utf8') : '';

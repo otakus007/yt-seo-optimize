@@ -8,7 +8,8 @@ import { getMyChannel } from '@/lib/youtube';
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get('code'), state = req.nextUrl.searchParams.get('state');
   if (!code || !state || state !== req.cookies.get('oauth_state')?.value) return new NextResponse('Bad OAuth state', { status: 400 });
-  const tok = await exchangeCode(code, `${requestOrigin(req)}/api/oauth/callback`);
+  const tok = await exchangeCode(code, `${requestOrigin(req)}/api/oauth/callback`).catch((e: Error) => e);
+  if (tok instanceof Error) return new NextResponse(`Google rejected the connection: ${tok.message}\n\nCheck GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET on the home page and retry.`, { status: 400 });
   if (!tok.refresh_token) return new NextResponse('Google did not return a refresh token; remove the app at myaccount.google.com/permissions and retry', { status: 400 });
   const { youtubeId, ...info } = await getMyChannel(tok.access_token);
   const ch = await prisma.channel.upsert({
