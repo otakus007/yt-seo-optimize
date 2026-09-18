@@ -31,14 +31,22 @@ Edits to this file are proposed to the owner in chat and only written when they 
   romance/action subgenre, 1 misspelling variant.
 
 ## Thumbnail
-- Gemini prompt formula: "A vibrant anime style YouTube thumbnail for a [genre] manhwa
-  recap. An expressive, [emotion] [character description] looking at the viewer. A
-  glowing, high-contrast [color] neon border. Mood: [mood]. No text in the image."
-- Owner adds 3–5 words of text in Canva. Text must be readable at 160 px wide.
-- Face + extreme emotion (crying, furious, smirk). One subject. High contrast.
+- Use a screenshot panel from the edited video, not AI-generated art. Verified 2026-09-18
+  against this channel's own top performers (v9-N2rkLFVc, TaAdwkEPfeM, iyjdvw8W0Ig,
+  h5fZEs_FdtQ, 1olvC8jS8hM, -DfV4wp51IQ): all 6 use native manhwa panel art, none use
+  custom AI art or a glowing border - the earlier Gemini/neon-border formula had no
+  evidence behind it despite this file's own rule that unproven rules get [hypothesis].
+- Pick the panel with ONE dominant close-up face, direct eye contact, legible emotion.
+  That's what separates this channel's winners from losers, not art style: the 8
+  underperformers flagged by yt-audit on 2026-09-18 mostly had distant full-body figures
+  or several small fragmented panels instead of one dominant face.
+- Text overlay is optional - most of the channel's top performers have none. If the video
+  is part of a multi-part upload, a small corner label ("PART 1"/"PART 2") is enough to
+  disambiguate; keep it small, don't let it compete with the face.
 - Critique checklist for existing thumbnails: face visible? emotion legible at small
-  size? text ≤ 5 words? not the same layout/colour as the previous 5 videos?
-  matches the title's promise?
+  size? is it ONE dominant close-up panel (not several small ones, not a distant shot)?
+  text ≤ 5 words if any? not the same layout/colour as the previous 5 videos? matches
+  the title's promise?
 
 ## What to change first (audit priority)
 1. `low-ctr` with normal retention → thumbnail, then title.

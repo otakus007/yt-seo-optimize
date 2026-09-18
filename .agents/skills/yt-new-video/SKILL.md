@@ -1,14 +1,15 @@
 ---
 name: yt-new-video
-description: Pre-publish optimization package for a new Manhwa/Webtoon recap video — 5 titles, description, tags, Gemini thumbnail prompt, 3 overlay texts — grounded in this channel's search terms, competitor outliers, and the playbook. Use when the owner is about to upload or asks for a title/thumbnail/description.
+description: Pre-publish optimization package for a new Manhwa/Webtoon recap video — 5 titles, description, tags, thumbnail panel guidance, 3 overlay texts — grounded in this channel's search terms, competitor outliers, and the playbook. Use when the owner is about to upload or asks for a title/thumbnail/description.
 ---
 
 # yt-new-video
 
 ## Input (ask if missing)
 Series name, 2–3 line plot hook, dominant emotion (betrayal / regression / revenge /
-romance / villainess), main character look (for the thumbnail prompt), part number if a
-series, and which channel (`@handle`) if more than one own channel exists.
+romance / villainess), which chapter/moment has the strongest close-up face for the
+thumbnail panel, part number if a series, and which channel (`@handle`) if more than one
+own channel exists.
 
 ## Steps
 1. Read `.agents/skills/playbook-manhwa.md` (rules + evidence).
@@ -26,17 +27,20 @@ series, and which channel (`@handle`) if more than one own channel exists.
      chapter timestamps for ≥10 min, series playlist line, subscribe line, 3 related recaps
      from `videos` in stats output.
    - **Tags**: 5–10, primary first.
-   - **Gemini prompt** using the playbook formula, 16:9, "No text in the image".
-   - **3 overlay texts** (≤5 words each, ALL CAPS ok on thumbnail only).
+   - **Thumbnail panel**: which chapter/moment to screenshot from the edited video, per the
+     playbook (one dominant close-up face, direct eye contact, legible emotion — not an
+     AI-generated image; see `playbook-manhwa.md#Thumbnail`).
+   - **3 overlay texts** (≤5 words each, optional — most of this channel's top performers
+     have none; only propose overlay if it clearly beats a bare panel).
 4. Save the draft so it can be measured later:
    ```
    pnpm tsx scripts/draft.ts save <<'JSON'
-   {"channel":"@handle","input":{...},"output":{"titles":[...],"description":"...","tags":[...],"thumbnailPrompt":"...","overlays":[...]},"chosenTitle":"..."}
+   {"channel":"@handle","input":{...},"output":{"titles":[...],"description":"...","tags":[...],"thumbnailPanel":"...","overlays":[...]},"chosenTitle":"..."}
    JSON
    ```
    After the video is published: `pnpm tsx scripts/draft.ts link <draftId> <youtubeId>`.
-5. Tell the owner: paste the prompt into Gemini, add overlay text in Canva, upload, then
-   run `yt-sync` in 48h and `yt-audit` in 7 days.
+5. Tell the owner: export that panel as a 1280x720 JPEG, add overlay text in Canva only if
+   proposed, upload, then run `yt-sync` in 48h and `yt-audit` in 7 days.
 
 ## Rules
 - No title without a number behind it (search term views, outlier multiple, baseline).
